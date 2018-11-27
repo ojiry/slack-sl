@@ -1,53 +1,88 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
-	"os"
+	"time"
+
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/labstack/echo"
 )
 
-var (
-	port  = "80"
-	token string
-)
+type Channel struct {
+	gorm.Model
+	SlackID string
+	Name    string
+	Lunch   []Lunch
+}
 
-func init() {
-	token = os.Getenv("SL_TOKEN")
-	if "" == token {
-		panic("SL_TOKEN is not set!")
-	}
+type Group struct {
+	gorm.Model
+	Lunch   Lunch
+	LunchID uint
+	Members []User `gorm:"many2many:group_members;"`
+}
 
-	if "" != os.Getenv("PORT") {
-		port = os.Getenv("PORT")
-	}
+type User struct {
+	gorm.Model
+	SlackID  string
+	Username string
+}
+
+type Lunch struct {
+	gorm.Model
+	Channel      Channel
+	ChannelID    uint
+	Groups       []Group
+	ShuffledAt   *time.Time
+	Participants []User `gorm:"many2many:participations;"`
+}
+
+type InteractiveMessage struct {
+	Text         string `json:"text"`
+	ResponseType string `json:"response_type"`
+	Attachments  []struct {
+		Text           string `json:"text"`
+		Fallback       string `json:"fallback"`
+		CallbackID     string `json:"callback_id"`
+		Color          string `json:"color"`
+		AttachmentType string `json:"attachment_type"`
+		Actions        []struct {
+			Name    string `json:"name"`
+			Text    string `json:"text"`
+			Type    string `json:"type"`
+			Value   string `json:"value"`
+			Style   string `json:"style,omitempty"`
+			Confirm struct {
+				Title       string `json:"title"`
+				Text        string `json:"text"`
+				OkText      string `json:"ok_text"`
+				DismissText string `json:"dismiss_text"`
+			} `json:"confirm,omitempty"`
+		} `json:"actions"`
+	} `json:"attachments"`
 }
 
 func main() {
-	http.HandleFunc("/slash_commands", slashCommandsHandler)
-	log.Fatalln(http.ListenAndServe(":"+port, nil))
+	db, _ := gorm.Open("sqlite3", "/tmp/gorm.db")
+	defer db.Close()
+	db.AutoMigrate(&Channel{}, &User{}, &Lunch{}, &Group{})
+
+	e := echo.New()
+	e.POST("/slash_commands", slashCommandsHandler)
+	e.GET("/slash_commands", slashCommandsHandler)
+	e.Start(":8080")
 }
 
-func slashCommandsHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		return
-	}
-
-	if token != r.FormValue("token") {
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		return
-	}
-
-	jsonResp, _ := json.Marshal(struct {
-		Type string `json:"response_type"`
-		Text string `json:"text"`
-	}{
-		Type: "in_channel",
-		Text: fmt.Sprintf("```%s```", "Hello World"),
+func slashCommandsHandler(c echo.Context) error {
+	db, _ := gorm.Open("sqlite3", "/tmp/gorm.db")
+	defer db.Close()
+	var channel Channel
+	db.FirstOrCreate(&channel, Channel{SlackID: c.Param("channel_id"), Name: c.Param("channel_name")})
+	var lunch Lunch
+	db.Where(Lunch{ChannelID: channel.ID, ShuffledAt: nil}).FirstOrCreate(&lunch)
+	return c.JSON(http.StatusOK, InteractiveMessage{
+		Text:         "Would you like to join the Shuffle Lunch today?",
+		ResponseType: "in_channel",
 	})
-
-	w.Header().Add("Content-Type", "application/json")
-	fmt.Fprintf(w, string(jsonResp))
 }
