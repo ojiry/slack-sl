@@ -2,8 +2,12 @@ package main
 
 import (
 	"fmt"
+
+	"slack-sl/app"
 )
 
 func main() {
-	fmt.Println("Hello World")
+	s := app.NewServer()
+
+	fmt.Printf("Hello World: %v", s)
 }

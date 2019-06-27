@@ -1,3 +1,3 @@
-module github.com/ojiry/slack-sl
+module slack-sl
 
 go 1.12
