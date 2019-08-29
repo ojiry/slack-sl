@@ -1,8 +1,8 @@
 package app
 
 import (
-	"slack-sl/app/repository"
-	"slack-sl/app/usecase"
+	"github.com/ojiry/slack-sl/app/repository"
+	"github.com/ojiry/slack-sl/app/usecase"
 )
 
 type Server struct {

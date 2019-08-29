@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"slack-sl/app/domain"
+	"github.com/ojiry/slack-sl/app/domain"
 )
 
 type LunchRepository interface {

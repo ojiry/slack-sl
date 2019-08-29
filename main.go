@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"slack-sl/app"
+	"github.com/ojiry/slack-sl/app"
 )
 
 func main() {
