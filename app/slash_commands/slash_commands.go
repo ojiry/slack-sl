@@ -15,3 +15,7 @@ type SlashCommands struct {
 	ResponseURL    string
 	TriggerID      string
 }
+
+func (c *SlashCommands) CreateLunch() *Lunch {
+	return nil
+}

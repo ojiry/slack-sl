@@ -1,26 +1,38 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-
-	"github.com/ojiry/slack-sl/app/slash_commands"
-	"github.com/ojiry/slack-sl/app/slash_commands/store"
 )
 
-func SlashCommandsHandler(w http.ResponseWriter, req *http.Request) {
-	sc := makeSlashCommands(req)
-	u := slash_commands.NewSlashCommandsUsecase(store.NewLunchStore())
-	l, err := u.CreateLunch(*sc)
-	if err != nil {
-		fmt.Printf("%v\n", err)
-	}
-
-	fmt.Printf("%v\n", l)
-	io.WriteString(w, "Hello, world!\n")
+type SlashCommandsResponse struct {
+	Type  string
+	Text  Text
+	Value string
 }
 
-func makeSlashCommands(req *http.Request) *slash_commands.SlashCommands {
-	return &slash_commands.SlashCommands{}
+type Text struct {
+	Type  string
+	Value string
+}
+
+func SlashCommandsHandler(w http.ResponseWriter, req *http.Request) {
+	res := SlashCommandsResponse{
+		Type: "button",
+		Text: Text{
+			Type:  "plain_text",
+			Value: "Click Me",
+		},
+		Value: "click_me_123",
+	}
+
+	json, err := json.Marshal(res)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprint(w, string(json))
 }

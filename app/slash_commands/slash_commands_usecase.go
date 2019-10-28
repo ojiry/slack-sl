@@ -1,9 +1,5 @@
 package slash_commands
 
-type LunchRepository interface {
-	Create(l Lunch) (*Lunch, error)
-}
-
 type SlashCommandsUsecase struct {
 	repo LunchRepository
 }
