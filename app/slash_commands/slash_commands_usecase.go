@@ -8,11 +8,11 @@ func NewSlashCommandsUsecase(repo LunchRepository) *SlashCommandsUsecase {
 	return &SlashCommandsUsecase{repo: repo}
 }
 
-func (u *SlashCommandsUsecase) CreateLunch(sc SlashCommands) (*Lunch, error) {
-	l, err := u.repo.Create(Lunch{})
+func (u *SlashCommandsUsecase) CreateLunch(sc *SlashCommands) (*Lunch, error) {
+	lunch, err := u.repo.Create(Lunch{ID: "TEST"})
 	if err != nil {
 		return nil, err
 	}
 
-	return l, nil
+	return lunch, nil
 }
