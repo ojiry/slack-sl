@@ -9,7 +9,7 @@ func NewSlashCommandsUsecase(repo LunchRepository) *SlashCommandsUsecase {
 }
 
 func (u *SlashCommandsUsecase) CreateLunch(sc *SlashCommands) (*Lunch, error) {
-	lunch, err := u.repo.Create(Lunch{ID: "TEST"})
+	lunch, err := u.repo.Create(Lunch{})
 	if err != nil {
 		return nil, err
 	}

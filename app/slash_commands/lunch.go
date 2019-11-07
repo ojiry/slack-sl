@@ -5,6 +5,6 @@ type LunchRepository interface {
 }
 
 type Lunch struct {
-	ID    string
+	ID    uint
 	Users []User
 }
