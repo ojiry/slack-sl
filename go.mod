@@ -1,6 +1,6 @@
 module github.com/ojiry/slack-sl
 
-go 1.12
+go 1.13
 
 require (
 	github.com/denisenkom/go-mssqldb v0.0.0-20190820223206-44cdfe8d8ba9 // indirect
